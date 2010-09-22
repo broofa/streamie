@@ -1,27 +1,22 @@
-/*
-STREAMING FOREVER-FRAME TEST
-
-Requires Node.js (http://nodejs.org/)
-
-To test:
-- Run "streamtest" (or "streamtest [port]") from the command line
-- Open either of the indicated URLs in your browser of choice
-- If the browser supports forever-frame style streaming, you will see 3 alerts at 2 second intervals
-- ... and if not, you\'ll see all three alerts at once after 6 seconds.</p>',
-
-Author: Robert Kieffer
-Date: 9/17/10
-*/
-
 var sys = require('sys');
 var http = require('http');
+var fs = require('fs');
 
 // Get port to run on
 var port = parseInt(process.env.PORT) || 8088;
 
+// Number of messages to send in /stream
+var COUNT = 3;
+
 sys.log('URL: http://localhost:' + port);
 
-// Generic method for writing out a string or array as a web page
+//
+// ServerRespones extensions
+//
+
+/**
+ * Write a basic web page
+ */
 http.ServerResponse.prototype.writePage = function(html) {
   html = html.join ? html.join('\n') : html;
   this.writeHead(200, {
@@ -32,9 +27,30 @@ http.ServerResponse.prototype.writePage = function(html) {
   this.end();
 };
 
+/**
+ * Write a message formatted for forever-frame + JSONP transport
+ *
+ * For this test we assume the JSONP method is named 'process'
+ */
+http.ServerResponse.prototype.writeFrameMessage = function(msg) {
+  var json = JSON.stringify(msg);
+  this.write('<script>process(' + json + ');</script>\n');
+};
+
+/**
+ * Write a message formatted XHR/XDR
+ */
+http.ServerResponse.prototype.writeJsonMessage = function(msg) {
+  res.write(JSON.stringify(msg) + '\n');
+};
+
+//
+// Main
+//
+
 http.createServer(function(req, res) {
-  // Reject stuff like favicon and robots.txt
   switch (req.url) {
+    // The endpoint for streaming data
     case '/stream':
       // Set up for chunked encoding, disable caching
       res.writeHead(200, {
@@ -43,27 +59,24 @@ http.createServer(function(req, res) {
         'Transfer-Encoding': 'chunked'
       });
 
-      // Write opening content
-      var html = [
-        '<!DOCTYPE html>',
-        '<html><body>',
-        new Array(1025).join(' '), // buffer buster for Chrome
-        ''
-      ];
-      res.write(html.join('\n'));
+      // Write prelude content
+      var prelude = fs.readFileSync('stream_prelude.html', 'utf8');
+      prelude = prelude.replace(/SERVER_TIME/, new Date().getTime());
+      res.write(prelude);
 
-      // Send 3 alerts asynchronously
-      var count = 0;
+      // Send COUNT alerts asynchronously
+      var count = COUNT;
       function send() {
-        if (count++ < 3) {
-          var msg = '<script>alert("' + count + ': ' +  new Date() + '");</script>\n';
-          sys.log('Sent: ' + msg);
-          res.write(msg);
+        var msg = {
+          sentAt: new Date().getTime()
+        };
+
+        if (count-- > 0) {
+          res.writeFrameMessage(msg);
           setTimeout(send, 2e3);
-          if (count >= 3) {
-            res.write('<p>-- Fin --</p></body></html>');
-            res.end();
-          }
+        } else {
+          res.write('<p>-- Fin --</p></body></html>');
+          res.end();
         }
       }
 
@@ -77,6 +90,13 @@ http.createServer(function(req, res) {
         <iframe src="/stream"></iframe> \
         </body></html> \
       ');
+      break;
+
+    case 'favicon.ico':
+    case 'robots.txt':
+      // Do not wantz
+      res.writeHead(404);
+      res.end();
       break;
 
     default:
