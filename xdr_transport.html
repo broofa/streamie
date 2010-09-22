@@ -64,7 +64,7 @@
     });
 
     var transport;
-    if (typeof(XDomainRequest) != 'undefined') {
+    if (typeof(XDomainRequest) != 'undefined' && !/xhr/.test(location.query)) {
       logit('Using XDomainRequest');
       // XDR transport (IE)
       transport = new XDomainRequest();

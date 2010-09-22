@@ -71,7 +71,6 @@ http.createServer(function(req, res) {
           'Transfer-Encoding': 'chunked'
         });
       } else {
-sys.log('frame transport');
         // Frame / htmlfile stream isa series of JSONP calls, which requires
         // some upfront script and prelude text
         res.writeHead(200, {
