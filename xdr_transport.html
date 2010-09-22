@@ -3,8 +3,90 @@
   <body>
     <h1>XDR Transport test
     <script>
-    var transport = new XDomainRequest();
-    transport.open('GET', '/stream?fmt=xhr');
+    var timeOffset = SERVER_TIME - new Date();
+
+    /**
+     * Class for processing an arbitrarily chunked data stream into discrete messages
+     */
+    function Dechunker(options) {
+      var data = [];
+      var cursor = 0;
+      options = options || {};
+
+      // Call whenever there's new data
+      this.process = function(transport) {
+        var text = (typeof(transport.responseText) == 'string') &&
+        transport.responseText;
+        // Only act if there's (new) data
+        if (text && text.length > cursor) {
+          // Get the unprocessed portion
+          var chunk = text.substring(cursor);
+          cursor = text.length;
+
+          if (options.onChunk) options.onChunk(chunk); // callback
+
+          // Munge residual and new chunk to find complete messages
+          data.push(chunk);
+          data = data.join('').split(options.seperator || '\n');
+
+          // Process each complete message
+          while (data.length > 1) {
+            var msg = data.shift();
+            try {
+              var evaledMsg = JSON.parse(msg);
+              msg = evaledMsg;
+            } catch (e) {
+              // Pass un-eval'ed msg
+            }
+            if (options.onMessage) options.onMessage(msg); // callback
+          }
+        }
+      };
+    }
+
+    //
+    // Main
+    //
+
+    function logit(msg) {
+      var el = document.createElement('div');
+      el.innerHTML = msg
+      document.body.appendChild(el);
+    }
+
+    // Create dechunker that logs to document when there's a message
+    var dechunker = new Dechunker({
+      onMessage: function(msg) {
+        var sentAt = msg.sentAt - timeOffset; // Convert to client time
+        var latency = Math.abs(new Date() - sentAt);
+        logit('Message received (latency = ' + latency + ' ms)');
+      }
+    });
+
+    var transport;
+    if (typeof(XDomainRequest) != 'undefined') {
+      logit('Using XDomainRequest');
+      // XDR transport (IE)
+      transport = new XDomainRequest();
+      transport.onprogress = function() {
+        dechunker.process(transport);
+      }
+    } else if (typeof(XMLHttpRequest) != 'undefined') {
+      logit('Using XMLHttpRequest');
+      // XHR transport (non-IE)
+      transport = new XMLHttpRequest();
+      transport.onreadystatechange = function() {
+        if (transport.readyState >= 3) {
+          dechunker.process(transport);
+        }
+      }
+    } else {
+      logit('No X*R transport found(!)');
+    }
+
+    // Send it
+    transport.open('GET', '/stream?format=xhr');
+    transport.send();
     </script>
   </body>
 </html>
