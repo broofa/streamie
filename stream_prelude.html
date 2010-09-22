@@ -6,7 +6,7 @@
 var timeOffset = SERVER_TIME - new Date();
 function process(msg) {
   var sentAt = msg.sentAt - timeOffset; // Convert to client time
-  var latency = new Date() - sentAt;
+  var latency = Math.abs(new Date() - sentAt);
   var el = document.createElement('div');
   el.innerHTML = 'Message received (latency = ' + latency + ' ms)';
   document.body.appendChild(el);

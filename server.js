@@ -2,22 +2,23 @@ var sys = require('sys');
 var http = require('http');
 var fs = require('fs');
 
-// Get port to run on
-var port = parseInt(process.env.PORT) || 8088;
-
 // Number of messages to send in /stream
 var COUNT = 3;
 
+// Get port to run on
+var port = parseInt(process.env.PORT) || 8088;
+
+// Log URL to hit
 sys.log('URL: http://localhost:' + port);
 
 //
-// ServerRespones extensions
+// Extensions to Node's built-in HTTP response object
 //
 
 /**
  * Write a basic web page
  */
-http.ServerResponse.prototype.writePage = function(html) {
+http.ServerResponse.prototype.sendPage = function(html) {
   html = html.join ? html.join('\n') : html;
   this.writeHead(200, {
     'Cache-Control': 'no-cache',
@@ -72,24 +73,18 @@ http.createServer(function(req, res) {
         };
 
         if (count-- > 0) {
+          // Write a message and repeat in a few seconds
           res.writeFrameMessage(msg);
           setTimeout(send, 2e3);
         } else {
+          // All done
           res.write('<p>-- Fin --</p></body></html>');
           res.end();
         }
       }
 
-      // Go!
+      // Start streaming the response
       send();
-      break;
-
-    case '/iframe':
-      res.writePage('<!DOCTYPE html> \
-        <html><body> \
-        <iframe src="/stream"></iframe> \
-        </body></html> \
-      ');
       break;
 
     case 'favicon.ico':
@@ -99,15 +94,12 @@ http.createServer(function(req, res) {
       res.end();
       break;
 
+    case '/frame_transport':
+    case '/xdr_transport':
+      res.sendPage(fs.readFileSync(req.url, 'utf8'));
+      break;
+
     default:
-      res.writePage('<!DOCTYPE html> \
-        <html><body> \
-          <h1>IE9 Streaming transport test</h1> \
-          <ul> \
-            <li><a href="/stream">Streaming data</a></li>\
-            <li><a href="/iframe">Iframe that pulls from /stream</a></li>\
-          </ul> \
-        </body></html> \
-      ');
+      res.sendPage(fs.readFileSync('index.html', 'utf8'));
   };
 }).listen(port);
