@@ -2,11 +2,14 @@
 <html>
 <head>
 <script>
-// common server/client
+// Server/client time offset
 var timeOffset = SERVER_TIME - new Date();
 function process(msg) {
-  var latency = new Date() - (msg.sentAt  - timeOffset);
-  alert('Latency: ' + latency);
+  var sentAt = msg.sentAt - timeOffset; // Convert to client time
+  var latency = new Date() - sentAt;
+  var el = document.createElement('div');
+  el.innerHTML = 'Message received (latency = ' + latency + ' ms)';
+  document.body.appendChild(el);
 }
 </script>
 </head>
