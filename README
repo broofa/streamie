@@ -1,1 +1,22 @@
 Testbed for evaluating streaming HTTP response mechanisms
+
+To run:
+- Launch the app using, "node server.js"
+- Point your browser at the URL that is shown on the command line
+- Click on the test you want to run
+
+Each test is *supposed* to stream 4 messages back to the client using chunked encoding.  If streaming is supported in the browser, you should see results with latency readings that are a) reasonably small (e.g. < 100ms) and b) consistent for each message, like so:
+
+    Message received (latency = 4 ms)
+    Message received (latency = 7 ms)
+    Message received (latency = 6 ms)
+    Message received (latency = 8 ms)
+
+If transport is functional, but doesn't support streaming, you won't get results for 8-10 seconds, and then all results will appear at once, with latency readings that are a) large (> 500ms) and b) spread across a range of 0-6 seconds, like so:
+
+    Message received (latency = 1 ms)
+    Message received (latency = 1999 ms)
+    Message received (latency = 4000 ms)
+    Message received (latency = 6000 ms)
+
+If you don't get any readings w/in 8-10 seconds, the transport is non-functional.

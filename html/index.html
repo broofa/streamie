@@ -1,12 +1,28 @@
 <!DOCTYPE html>
 <html>
   <body>
-    <h1>Streaming Transport Test</h1>
-    <ul>
-      <li><a href="/stream">Streaming data</a></li>
-      <li><a href="/iframe_transport.html">Test iframe streaming</a></li>
-      <li><a href="/x_transport.html">Test XDomainRequest streaming (IE only)</a></li>
-      <li><a href="/x_transport.html?xhr">Test XMLHttpRequest streaming</a></li>
-    </ul>
+    <h1>Streaming tests</h1>
+    View the <a href="http://github.com/broofa/streamie">README</a> For more info
+
+    <h2>Streaming Frame tests</h2>
+    <dl>
+      <dt><a href="/stream">The frame/htmlfile content stream</a></dt>
+      <dd>The content stream for iframe and htmlfile-based APIs. Uses SCRIPT fragments to generate JSONP calls</dd>
+
+      <dt><a href="/iframe_transport.html"> ... transported into client iframe</a></dt>
+      <dd>Streaming iframe content in an iframe.  I'm assuming this is equivalent to opening this document in an ActiveX htmlfile object for now.  Will provide an actual test of the htmlfile API soon.</dd>
+    </dl>
+
+    <h2>Streaming XHR/XDR tests</h2>
+    <dl>
+      <dt><a href="/stream?xhr">The XDR/XHR content stream (JSON format)</a></dt>
+      <dd>The content stream for use by XDomainRequest and XMLHttpRequest APIs. \n-separated JSON messages. This will likely result in a file download in your browser because the content type is set to application/octet-stream to work around a Chrome caching issue.</dd>
+
+      <dt><a href="/x_transport.html">... transported into client XDomainRequest object (IE only)</a></dt>
+      <dd>Processed using XdomainRequest object with an onprogress handler.</dd>
+
+      <dt><a href="/x_transport.html?xhr">... transported into client XMLHttpRequest object</a></dt>
+      <dd>Processed using XMLHttpRequest object with an onreadystatechange handler.</dd>
+    </dl>
   </body>
 </html>
