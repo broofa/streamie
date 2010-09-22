@@ -5,7 +5,7 @@
 // common server/client
 var timeOffset = SERVER_TIME - new Date();
 function process(msg) {
-  var latency = new Date() - (msg.sentAt  + timeOffset);
+  var latency = new Date() - (msg.sentAt  - timeOffset);
   alert('Latency: ' + latency);
 }
 </script>
