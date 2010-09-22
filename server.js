@@ -60,7 +60,7 @@ http.createServer(function(req, res) {
   switch (parts.pathname) {
     // The endpoint for streaming data
     case '/stream':
-      var format = parts.query.format;
+      var format = parts.query && parts.query.format;
       if (format == 'xhr') {
         // XHR/XDR stream is just \n-separated JSON objects, with no prelude.
         // We use the octet-stream type to work around Chrome's caching bug.
@@ -71,8 +71,9 @@ http.createServer(function(req, res) {
           'Transfer-Encoding': 'chunked'
         });
       } else {
-        // Frame/htmlfile stream is stream of JSONP calls, which requires
-        // some upfront script and prelude text to bust client caching
+sys.log('frame transport');
+        // Frame / htmlfile stream isa series of JSONP calls, which requires
+        // some upfront script and prelude text
         res.writeHead(200, {
           'Cache-Control': 'no-cache',
           'Content-Type': 'text/html',
@@ -94,7 +95,7 @@ http.createServer(function(req, res) {
 
         if (count-- > 0) {
           // Write a message and repeat in a few seconds
-          res.writeMessage(msg, parts.query.format);
+          res.writeMessage(msg, format);
           setTimeout(send, 2e3);
         } else {
           // All done
