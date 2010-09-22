@@ -6,23 +6,23 @@
 
     <h2>Streaming Frame tests</h2>
     <dl>
-      <dt><a href="/stream">The frame/htmlfile content stream</a></dt>
-      <dd>The content stream for iframe and htmlfile-based APIs. Uses SCRIPT fragments to generate JSONP calls</dd>
+      <dt><a href="/stream">Frame/htmlfile stream</a></dt>
+      <dd>The text/html content stream for iframe and htmlfile-based APIs. Contains SCRIPT fragments that generate JSONP calls.</dd>
 
-      <dt><a href="/iframe_transport.html"> ... transported into client iframe</a></dt>
-      <dd>Streaming iframe content in an iframe.  I'm assuming this is equivalent to opening this document in an ActiveX htmlfile object for now.  Will provide an actual test of the htmlfile API soon.</dd>
+      <dt><a href="/iframe_transport.html">Frame/htmlfile stream -> IFrame</a></dt>
+      <dd>The Frame/htmlfile stream piped into an iframe.  Probably not terribly interesting since it's basically the same mechanics as the bare Frame/htmlfile stream above.  A stepping stone to the actual ActiveXObject('htmlfile')-based implementation I'll be implementing a test for shortly.</dd>
     </dl>
 
     <h2>Streaming XHR/XDR tests</h2>
     <dl>
-      <dt><a href="/stream?xhr">The XDR/XHR content stream (JSON format)</a></dt>
-      <dd>The content stream for use by XDomainRequest and XMLHttpRequest APIs. \n-separated JSON messages. This will likely result in a file download in your browser because the content type is set to application/octet-stream to work around a Chrome caching issue.</dd>
+      <dt><a href="/stream?xhr">XDR/XHR stream</a></dt>
+      <dd>The content stream for use by XDomainRequest and XMLHttpRequest APIs. \n-separated JSON messages. Note that this Content-Type for this is application/octet-stream to work around a Chrome caching issue, so this will likely show up as a file download.</dd>
 
-      <dt><a href="/x_transport.html">... transported into client XDomainRequest object (IE only)</a></dt>
-      <dd>Processed using XdomainRequest object with an onprogress handler.</dd>
+      <dt><a href="/x_transport.html">XDR/XHR stream -> XDomainRequest (IE only)</a></dt>
+      <dd>Test of the XDR/XHR stream fed into an XdomainRequest object. (view source for details)</dd>
 
-      <dt><a href="/x_transport.html?xhr">... transported into client XMLHttpRequest object</a></dt>
-      <dd>Processed using XMLHttpRequest object with an onreadystatechange handler.</dd>
+      <dt><a href="/x_transport.html?xhr">XDR/XHR stream -> XMLHttpRequest</a></dt>
+      <dd>Test of the XDR/XHR stream fed into an XMLHttpRequest object. (same source as the above, but with the 'xhr' param set)</dd>
     </dl>
   </body>
 </html>
