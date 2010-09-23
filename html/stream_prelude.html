@@ -13,7 +13,7 @@ function logit(msg) {
 var timeOffset = SERVER_TIME - new Date();
 function process(msg) {
   var sentAt = msg.sentAt - timeOffset; // Convert to client time
-  var latency = Math.abs(new Date() - sentAt);
+  var latency = new Date() - sentAt;
   logit('Message received (latency = ' + latency + ' ms)');
 }
 </script>

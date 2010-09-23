@@ -74,11 +74,11 @@
 
       //var transport;
       if (typeof(XDomainRequest) != 'undefined' && !/xhr/.test(location.search)) {
-        logit('Using XDomainRequest Transport', 'grey');
+        logit('Using XDomainRequest Transport', 'gray');
         // XDR transport (IE)
         transport = new XDomainRequest();
       } else if (typeof(XMLHttpRequest) != 'undefined') {
-        logit('Using XMLHttpRequest Transport', 'grey');
+        logit('Using XMLHttpRequest Transport', 'gray');
         // XHR transport (non-IE)
         transport = new XMLHttpRequest();
       } else {
@@ -87,18 +87,18 @@
 
       // Listen for *everything*
       transport.onprogress = function() {
-        logit('    (progress)', 'grey');
+        logit('(progress)', 'gray');
         dechunker.process(transport);
       }
-      transport.oncomplete = function() {
-        logit('    (progress)', 'grey');
+      transport.onload = function() {
+        logit('(load)', 'gray');
         dechunker.process(transport);
       }
       transport.onerror = function(e) {
-        logit('    (error)', 'red');
+        logit('(error)', 'red');
       }
       transport.onreadystatechange = function() {
-        logit('    (readystatechange -> ' + transport.readyState + ')', 'grey');
+        logit('(readystatechange -> ' + transport.readyState + ')', 'gray');
         if (transport.readyState >= 3) {
           dechunker.process(transport);
         }

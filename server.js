@@ -7,7 +7,7 @@ var url = require('url');
 var COUNT = 4;
 
 // Get port to run on
-var port = parseInt(process.env.PORT) || 8085;
+var port = parseInt(process.env.PORT) || 80;
 
 // Log URL to hit
 sys.log('URL: http://localhost:' + port);
