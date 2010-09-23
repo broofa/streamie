@@ -54,6 +54,11 @@ http.ServerResponse.prototype.writeMessage = function(msg, format) {
 // Main
 //
 
+// Don't let the process die
+process.on('uncaughtException', function(err) {
+  console.log('Caught exception: ' + err);
+});
+
 http.createServer(function(req, res) {
   var parts = url.parse(req.url, true);
   sys.log(req.method + ' ' + parts.pathname);
@@ -123,6 +128,11 @@ http.createServer(function(req, res) {
     case '/robots.txt':
       res.writeHead(404);
       res.end();
+      break;
+
+    case '/halt':
+      res.sendPage('<html><body>This is the last of earth! I am content.</body></html>');
+      process.exit();
       break;
 
     // Serve up static pages
