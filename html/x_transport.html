@@ -105,7 +105,13 @@
       }
 
       // Send it
-      transport.open('GET', '/stream?format=json');
+      var search = location.search + '';
+      // If there's an error=### param, point to a url that generates that
+      // response code, otherwise go to the stream url
+      var url = /error/.test(location.search) ? '/error' + location.search :
+                                                '/stream?format=json';
+
+      transport.open('GET', url);
       transport.send();
     }
     </script>

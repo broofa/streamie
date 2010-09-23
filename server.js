@@ -7,7 +7,7 @@ var url = require('url');
 var COUNT = 4;
 
 // Get port to run on
-var port = parseInt(process.env.PORT) || 80;
+var port = parseInt(process.env.PORT) || 8085;
 
 // Log URL to hit
 sys.log('URL: http://localhost:' + port);
@@ -42,6 +42,7 @@ http.ServerResponse.prototype.sendPage = function(html, tokens) {
  * For this test we assume the JSONP method is named 'process'
  */
 http.ServerResponse.prototype.writeMessage = function(msg, format) {
+sys.log('chunked = ' + this.chunkedEncoding);
   msg = typeof(msg) == 'string' ? msg : JSON.stringify(msg);
   if (format == 'json') {
     this.write(msg + '\n');
@@ -56,11 +57,13 @@ http.ServerResponse.prototype.writeMessage = function(msg, format) {
 
 http.createServer(function(req, res) {
   var parts = url.parse(req.url, true);
+  var query = parts.query = parts.query || {};
+
   sys.log(req.method + ' ' + parts.pathname);
   switch (parts.pathname) {
     // The endpoint for streaming data
     case '/stream':
-      var format = (parts.query && parts.query.format) || 'frame';
+      var format = (query.format) || 'frame';
       if (format == 'json') {
         // XHR/XDR stream is just \n-separated JSON objects, with no prelude.
         // We use the octet-stream type to work around Chrome's caching bug.
@@ -123,6 +126,17 @@ http.createServer(function(req, res) {
     case '/robots.txt':
       res.writeHead(404);
       res.end();
+      break;
+
+    // For testing error handling
+    case '/error':
+      res.writeHead(parseInt(query.error) || 404);
+      res.end();
+      break;
+
+    // For testing unresponsive servers
+    case '/null':
+      setTimeout(function() {res.end();}, 300e3);
       break;
 
     // Serve up static pages
