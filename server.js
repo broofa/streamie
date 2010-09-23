@@ -55,6 +55,11 @@ sys.log('chunked = ' + this.chunkedEncoding);
 // Main
 //
 
+// Don't let the process die
+process.on('uncaughtException', function(err) {
+  console.log('Caught exception: ' + err);
+});
+
 http.createServer(function(req, res) {
   var parts = url.parse(req.url, true);
   var query = parts.query = parts.query || {};
@@ -137,6 +142,10 @@ http.createServer(function(req, res) {
     // For testing unresponsive servers
     case '/null':
       setTimeout(function() {res.end();}, 300e3);
+
+    case '/halt':
+      res.sendPage('<html><body>This is the last of earth! I am content.</body></html>');
+      process.exit();
       break;
 
     // Serve up static pages
