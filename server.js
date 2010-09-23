@@ -65,7 +65,6 @@ http.createServer(function(req, res) {
   var parts = url.parse(req.url, true);
   var query = parts.query = parts.query || {};
 
-  sys.log(sys.inspect(query));
   switch (parts.pathname) {
     // The endpoint for streaming data
     case '/stream':
