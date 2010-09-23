@@ -73,7 +73,7 @@
       });
 
       //var transport;
-      if (typeof(XDomainRequest) != 'undefined' && !/xhr/.test(location.search)) {
+      if (typeof(XDomainRequest) != 'undefined' && !/type=xhr/.test(location.search)) {
         logit('Using XDomainRequest Transport', 'gray');
         // XDR transport (IE)
         transport = new XDomainRequest();
@@ -87,31 +87,25 @@
 
       // Listen for *everything*
       transport.onprogress = function() {
-        logit('(progress)', 'gray');
+        logit('-> progress', 'gray');
         dechunker.process(transport);
       }
       transport.onload = function() {
-        logit('(load)', 'gray');
+        logit('-> load', 'gray');
         dechunker.process(transport);
       }
       transport.onerror = function(e) {
-        logit('(error)', 'red');
+        logit('-> error', 'red');
       }
       transport.onreadystatechange = function() {
-        logit('(readystatechange -> ' + transport.readyState + ')', 'gray');
+        logit('-> readystatechange = ' + transport.readyState + '', 'gray');
         if (transport.readyState >= 3) {
           dechunker.process(transport);
         }
       }
 
       // Send it
-      var search = location.search + '';
-      // If there's an error=### param, point to a url that generates that
-      // response code, otherwise go to the stream url
-      var url = /error/.test(location.search) ? '/error' + location.search :
-                                                '/stream?format=json';
-
-      transport.open('GET', url);
+      transport.open('GET', '/stream' + (location.search || '?type=xhr'));
       transport.send();
     }
     </script>

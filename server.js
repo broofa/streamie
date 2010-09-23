@@ -41,13 +41,14 @@ http.ServerResponse.prototype.sendPage = function(html, tokens) {
  *
  * For this test we assume the JSONP method is named 'process'
  */
-http.ServerResponse.prototype.writeMessage = function(msg, format) {
-sys.log('chunked = ' + this.chunkedEncoding);
+http.ServerResponse.prototype.writeMessage = function(msg, type) {
   msg = typeof(msg) == 'string' ? msg : JSON.stringify(msg);
-  if (format == 'json') {
+  if (/x[hd]r/.test(type)) {
     this.write(msg + '\n');
-  } else {
+  } else if (type == 'frame') {
     this.write('<script>process(' + msg + ');</script>\n');
+  } else {
+    sys.log('unexpected type format');
   }
 };
 
@@ -64,12 +65,26 @@ http.createServer(function(req, res) {
   var parts = url.parse(req.url, true);
   var query = parts.query = parts.query || {};
 
-  sys.log(req.method + ' ' + parts.pathname);
+  sys.log(sys.inspect(query));
   switch (parts.pathname) {
     // The endpoint for streaming data
     case '/stream':
-      var format = (query.format) || 'frame';
-      if (format == 'json') {
+      var type = (query.type) || 'frame';
+
+      if (type == '404') {
+        // For testing error handling
+        res.writeHead(parseInt(query.code) || 404);
+        res.end();
+        return;
+      } else if (type ==  'dead') {
+        // For testing killed connections
+        return setTimeout(function() {
+          res.connection.destroy();
+        }, 3e3);
+      } else if (type == 'silent') {
+        // For testing unresponsive servers
+        return setTimeout(function() {res.end();}, 300e3);
+      } else if (/x[hd]r/.test(type)) {
         // XHR/XDR stream is just \n-separated JSON objects, with no prelude.
         // We use the octet-stream type to work around Chrome's caching bug.
         // See http://code.google.com/p/chromium/issues/detail?id=2016#c41
@@ -111,13 +126,13 @@ http.createServer(function(req, res) {
 
         if (count-- > 0) {
           // Write a message and repeat in a few seconds
-          sys.log('sending ' + format + ' message');
-          res.writeMessage(msg, format);
+          sys.log('sending ' + type + ' message');
+          res.writeMessage(msg, type);
           setTimeout(send, 2e3);
         } else {
           sys.log('done');
           // All done
-          if (format != 'json') {
+          if (type == 'frame') {
             res.write('<p>-- Fin --</p></body></html>');
           }
           res.end();
@@ -132,16 +147,6 @@ http.createServer(function(req, res) {
       res.writeHead(404);
       res.end();
       break;
-
-    // For testing error handling
-    case '/error':
-      res.writeHead(parseInt(query.error) || 404);
-      res.end();
-      break;
-
-    // For testing unresponsive servers
-    case '/null':
-      setTimeout(function() {res.end();}, 300e3);
 
     case '/halt':
       res.sendPage('<html><body>This is the last of earth! I am content.</body></html>');
